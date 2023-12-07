@@ -32,14 +32,17 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.contacts.data.event.ContactEvent
 import com.example.contacts.data.state.ContactState
 import com.example.contacts.model.Contact
@@ -52,19 +55,16 @@ import com.example.contacts.ui.theme.topBarColor
 import com.example.contacts.views.components.AddContactDialog
 import com.example.contacts.views.components.ContactItem
 import com.example.contacts.views.viewmodel.ContactViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactScreen(
-    state : ContactState,
-    onEvent : (ContactEvent) -> Unit
+    contactViewModel: ContactViewModel = viewModel()
 ) {
-    val contact1 = Contact(id = 1, name = "Contacto 1", number = "999999999", favorite = true)
-    val contact2 = Contact(id = 2, name = "Contacto 2", number = "999999999", favorite = false)
-    val contact3 = Contact(id = 3, name = "Contacto 3", number = "999999999", favorite = false)
-    val contact4 = Contact(id = 4, name = "Contacto 4", number = "999999999", favorite = false)
-    val contact5 = Contact(id = 5, name = "Contacto 5", number = "999999999", favorite = false)
-    val contacts = mutableListOf(contact1, contact2, contact3, contact4, contact5)
+    val allContacts = contactViewModel.allContacts.observeAsState().value
+    Log.i("ALL CONTACTS: ",allContacts.toString())
+    val context= LocalContext.current
 
     val openAddDialog =  remember{ mutableStateOf(false) }
 
@@ -129,10 +129,11 @@ fun ContactScreen(
                         .background(Color.White),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    //val filteredContacts = contacts.filter { it.name.contains(searchText.value, true) }
-                    val filteredContacts = state.contacts.filter { it.name.contains(searchText.value, true) }
+                    val list = contactViewModel.allContacts
+                    val filteredContacts = list.value?.filter { it.name.contains(searchText.value, true) }
+                    //val filteredContacts = state.contacts.filter { it.name.contains(searchText.value, true) }
                     item{
-                        filteredContacts.forEachIndexed { index, contact ->
+                        filteredContacts?.forEachIndexed { index, contact ->
                             ContactItem(
                                 contact = contact,
                                 lastItem = index == filteredContacts.size-1
@@ -146,8 +147,7 @@ fun ContactScreen(
         floatingActionButton = {
             Button(
                 onClick = {
-                    onEvent(ContactEvent.ShowDialog)
-                   //openAddDialog.value = true
+                   openAddDialog.value = true
                 },
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(
@@ -174,11 +174,10 @@ fun ContactScreen(
         }
     )
 
-    if(state.isAddingContact){
+    if(openAddDialog.value){
         AddContactDialog(
             openAddDialog = openAddDialog,
-            onEvent = onEvent,
-            state = state
+            contactViewModel = contactViewModel
         )
     }
 

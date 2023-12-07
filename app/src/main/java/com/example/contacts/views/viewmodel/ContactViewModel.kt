@@ -1,22 +1,55 @@
 package com.example.contacts.views.viewmodel
 
+import android.app.Application
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.contacts.data.dao.ContactDao
+import com.example.contacts.data.dao.ContactDatabase
 import com.example.contacts.data.event.ContactEvent
+import com.example.contacts.data.repository.ContactRepository
 import com.example.contacts.data.state.ContactState
 import com.example.contacts.model.Contact
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ContactViewModel(
-    private val dao : ContactDao
-): ViewModel() {
+@HiltViewModel
+class ContactViewModel @Inject constructor(
+    application: Application
+): AndroidViewModel(application) /*ViewModel()*/ {
 
-    private val _state = MutableStateFlow(ContactState())
-    private val _contacts = dao.allContacts()
+    val allContacts : LiveData<List<Contact>>
+    val repository : ContactRepository
+
+    init {
+        val dao = ContactDatabase.getDatabase(application).daoContact()
+        repository = ContactRepository(dao)
+        allContacts = repository.allContacts
+    }
+
+    fun addContact(contact: Contact){
+        viewModelScope.launch(Dispatchers.IO){
+            Log.i("ENTRO A ADD CONTACT: ", contact.toString())
+            repository.insert(contact)
+        }
+    }
+
+    fun deleteContact(contact: Contact){
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.delete(contact)
+        }
+    }
+
+    /*private val _state = MutableStateFlow(ContactState())
+    val contacts = dao.allContacts()
+    val state = ContactState()
     /*val state = combine(_state,_contacts){ state, contacts ->
         state.copy(
             contacts = contacts
@@ -84,7 +117,7 @@ class ContactViewModel(
         }
     }
 
-    /*val contactsList = mutableListOf<Contact>()
+    val contactsList = mutableListOf<Contact>()
 
     fun getContacts(context: Context){
         try{

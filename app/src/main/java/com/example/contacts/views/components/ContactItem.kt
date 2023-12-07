@@ -3,6 +3,9 @@ package com.example.contacts.views.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -30,6 +33,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.example.contacts.data.event.ContactEvent
 import com.example.contacts.data.state.ContactState
@@ -57,6 +61,13 @@ fun ContactItem(
                     style = MaterialTheme.typography.bodyLarge
                 )
             },
+            supportingContent = {
+                Text(
+                    text = contact.number,
+                    color = Color.Gray,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            } ,
             leadingContent = {
                 Icon(
                     imageVector = Icons.Rounded.AccountCircle,
@@ -80,7 +91,8 @@ fun ContactItem(
             },
             colors = ListItemDefaults.colors(
                 containerColor = containerColor
-            )
+            ),
+            modifier = Modifier
         )
         if(!lastItem){
             Divider(

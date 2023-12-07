@@ -1,9 +1,9 @@
 package com.example.contacts.model
 
-import android.arch.persistence.room.Entity
-import android.arch.persistence.room.PrimaryKey
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-@Entity
+@Entity(tableName = "Contact")
 data class Contact(
     @PrimaryKey(autoGenerate = true)
     val id: Int?=null,

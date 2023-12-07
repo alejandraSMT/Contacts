@@ -54,8 +54,7 @@ import com.example.contacts.views.viewmodel.ContactViewModel
 @Composable
 fun AddContactDialog(
     openAddDialog: MutableState<Boolean>,
-    state : ContactState,
-    onEvent : (ContactEvent) -> Unit
+    contactViewModel: ContactViewModel
 ) {
 
     val newName = remember{ mutableStateOf("") }
@@ -63,8 +62,8 @@ fun AddContactDialog(
 
     Dialog(
         onDismissRequest = {
-            //openAddDialog.value = false
-            onEvent(ContactEvent.HideDialog)
+            openAddDialog.value = false
+            //onEvent(ContactEvent.HideDialog)
         }
     ) {
         Card(
@@ -106,9 +105,9 @@ fun AddContactDialog(
                 }
 
                 TextField(
-                    value = state.name,
+                    value = newName.value,
                     onValueChange = {
-                        onEvent(ContactEvent.setName(it))
+                        newName.value = it
                     },
                     leadingIcon = {
                         Icon(
@@ -140,9 +139,9 @@ fun AddContactDialog(
                 )
 
                 TextField(
-                    value = state.number,
+                    value = newNumber.value,
                     onValueChange = {
-                        onEvent(ContactEvent.setPhone(it))
+                        newNumber.value = it
                     },
                     leadingIcon = {
                         Icon(
@@ -184,10 +183,10 @@ fun AddContactDialog(
                 ){
                     Button(
                         onClick = {
-                            //openAddDialog.value = false
-                            onEvent(ContactEvent.HideDialog)
-                            //newName.value = ""
-                            //newNumber.value = ""
+                            openAddDialog.value = false
+                            newName.value = ""
+                            newNumber.value = ""
+                            //onEvent(ContactEvent.HideDialog)
                         },
                         shape = RoundedCornerShape(20.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -203,13 +202,16 @@ fun AddContactDialog(
 
                     Button(
                         onClick = {
-                            onEvent(ContactEvent.SaveContact)
-                            onEvent(ContactEvent.HideDialog)
-                            /*openAddDialog.value = false
+                            //onEvent(ContactEvent.SaveContact)
+                            //onEvent(ContactEvent.HideDialog)
+                            val contact = Contact(
+                                name = newName.value,
+                                number = newNumber.value
+                            )
+                            contactViewModel.addContact(contact)
+                            openAddDialog.value = false
                             newName.value = ""
                             newNumber.value = ""
-                            onEvent(ContactEvent.setName(newName.value))
-                            onEvent(ContactEvent.setPhone(newNumber.value))*/
                         },
                         shape = RoundedCornerShape(20.dp),
                         colors = ButtonDefaults.buttonColors(

@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -19,12 +20,17 @@ import com.example.contacts.data.dao.ContactDatabase
 import com.example.contacts.ui.theme.ContactsTheme
 import com.example.contacts.views.ContactScreen
 import com.example.contacts.views.viewmodel.ContactViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    //lateinit var contactViewModel: ContactViewModel
+    private val contactViewModel by viewModels<ContactViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        private val db by lazy {
+        /*val db by lazy {
             Room.databaseBuilder(
                 applicationContext,
                 ContactDatabase::class.java,
@@ -32,15 +38,15 @@ class MainActivity : ComponentActivity() {
             ).build()
         }
 
-        private val contactViewModel by viewModels<ContactViewModel>(
+        val contactViewModel by viewModels<ContactViewModel>(
             factoryProducer = {
                 object : ViewModelProvider.Factory{
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        return ContactViewModel(db.daoContact()) as T
+                        return ContactViewModel(db.daoContact) as T
                     }
                 }
             }
-        )
+        )*/
 
         setContent {
             ContactsTheme {
@@ -49,10 +55,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-
                     ContactScreen(
-                        state = ,
-                        onEvent = contactViewModel::onEvent
+                        contactViewModel = contactViewModel
+                        //contactViewModel = contactViewModel
                     )
                 }
             }
