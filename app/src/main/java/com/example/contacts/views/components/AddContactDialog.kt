@@ -1,8 +1,19 @@
 package com.example.contacts.views.components
 
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +42,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -39,16 +52,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.ContextCompat
+import androidx.room.TypeConverters
 import com.example.contacts.R
 import com.example.contacts.data.event.ContactEvent
 import com.example.contacts.data.state.ContactState
 import com.example.contacts.model.Contact
 import com.example.contacts.ui.theme.buttonsColor
 import com.example.contacts.ui.theme.containerColor
+import com.example.contacts.utils.Converters
 import com.example.contacts.views.viewmodel.ContactViewModel
 
 @Composable
@@ -56,14 +75,43 @@ fun AddContactDialog(
     openAddDialog: MutableState<Boolean>,
     contactViewModel: ContactViewModel
 ) {
+    val openErrorDialog = remember { mutableStateOf(false) }
 
     val newName = remember{ mutableStateOf("") }
     val newNumber = remember{ mutableStateOf("") }
 
+    var imageUri = remember {
+        mutableStateOf<Uri?>(null)
+    }
+    val context = LocalContext.current
+    val bitmap =  remember {
+        mutableStateOf<Bitmap?>(null)
+    }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()){
+        uri: Uri? ->
+        imageUri.value = uri
+    }
+
+    imageUri?.let {
+        if(Build.VERSION.SDK_INT < 28){
+            bitmap.value = MediaStore.Images.Media.getBitmap(
+                context.contentResolver, it.value
+            )
+        }else{
+            val source = it.value?.let { it1 ->
+                ImageDecoder
+                    .createSource(context.contentResolver, it1)
+            }
+            val aux = source?.let { it1 -> ImageDecoder.decodeBitmap(it1) }
+            bitmap.value = aux?.copy(Bitmap.Config.ARGB_8888,false)
+        }
+    }
+
     Dialog(
         onDismissRequest = {
             openAddDialog.value = false
-            //onEvent(ContactEvent.HideDialog)
         }
     ) {
         Card(
@@ -94,16 +142,28 @@ fun AddContactDialog(
                         .background(buttonsColor)
                         .size(90.dp)
                         .align(Alignment.CenterHorizontally)
+                        .clickable {
+                            launcher.launch("image/*")
+                        }
                 ){
-                    Icon(
-                        imageVector = Icons.Rounded.Person,
-                        contentDescription = "add foto",
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(40.dp)
-                    )
+                    if(bitmap.value == null){
+                        Icon(
+                            imageVector = Icons.Rounded.Person,
+                            contentDescription = "add foto",
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(40.dp)
+                        )
+                    }else{
+                        Image(
+                            bitmap = bitmap.value!!.asImageBitmap(),
+                            contentDescription = "image uploading",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(200.dp)
+                        )
+                    }
                 }
-
                 TextField(
                     value = newName.value,
                     onValueChange = {
@@ -178,7 +238,7 @@ fun AddContactDialog(
                 Row(
                    modifier = Modifier
                        .align(Alignment.CenterHorizontally)
-                       .padding(top=15.dp),
+                       .padding(top = 15.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ){
                     Button(
@@ -202,16 +262,22 @@ fun AddContactDialog(
 
                     Button(
                         onClick = {
-                            //onEvent(ContactEvent.SaveContact)
-                            //onEvent(ContactEvent.HideDialog)
-                            val contact = Contact(
-                                name = newName.value,
-                                number = newNumber.value
-                            )
-                            contactViewModel.addContact(contact)
-                            openAddDialog.value = false
-                            newName.value = ""
-                            newNumber.value = ""
+                            Log.i("CONVERTOR BASE64: ",Converters().bitmapToBase64(bitmap.value!!))
+                            if(newName.value != "" && newNumber.value != ""){
+                                val contact = Contact(
+                                    name = newName.value,
+                                    number = newNumber.value,
+                                    contactImage = Converters().bitmapToBase64(bitmap.value!!)
+                                    /* REVISAR ESTO PORQUE GUARDA NULL*/
+                                )
+                                contactViewModel.addContact(contact)
+                                openAddDialog.value = false
+                                newName.value = ""
+                                newNumber.value = ""
+
+                            }else{
+                                openErrorDialog.value = true
+                            }
                         },
                         shape = RoundedCornerShape(20.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -228,5 +294,11 @@ fun AddContactDialog(
 
             }
         }
+    }
+
+    if(openErrorDialog.value){
+        ErrorDialog(
+            openErroDialog = openErrorDialog
+        )
     }
 }

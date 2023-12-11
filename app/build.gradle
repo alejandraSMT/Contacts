@@ -81,4 +81,9 @@ dependencies {
     implementation 'androidx.compose.material3:material3:1.1.2'
 
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2'
+
+    //Swipe
+    implementation "me.saket.swipe:swipe:1.1.1"
+
+
 }

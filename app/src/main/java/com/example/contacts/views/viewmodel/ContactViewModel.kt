@@ -47,6 +47,18 @@ class ContactViewModel @Inject constructor(
         }
     }
 
+    fun addFavorite(contact: Contact){
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.addFavorite(contact.id!!)
+        }
+    }
+
+    fun removeFavorite(contact: Contact){
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.removeFavorite(contact.id!!)
+        }
+    }
+
     /*private val _state = MutableStateFlow(ContactState())
     val contacts = dao.allContacts()
     val state = ContactState()

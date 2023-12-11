@@ -18,3 +18,5 @@ val others = Color(0xffffffff)
 val favoriteColor = Color(0xFFF0F066)
 
 val searchbar = Color(0xffFAF6F0)
+
+val deleteRed = Color(0xffD83F31)

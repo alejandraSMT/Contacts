@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddCircle
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,6 +34,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.contacts.data.event.ContactEvent
@@ -50,12 +54,14 @@ import com.example.contacts.ui.theme.PurpleGrey40
 import com.example.contacts.ui.theme.PurpleGrey80
 import com.example.contacts.ui.theme.buttonsColor
 import com.example.contacts.ui.theme.containerColor
+import com.example.contacts.ui.theme.favoriteColor
 import com.example.contacts.ui.theme.searchbar
 import com.example.contacts.ui.theme.topBarColor
 import com.example.contacts.views.components.AddContactDialog
 import com.example.contacts.views.components.ContactItem
 import com.example.contacts.views.viewmodel.ContactViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import me.saket.swipe.SwipeAction
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -131,13 +137,24 @@ fun ContactScreen(
                 ) {
                     val list = contactViewModel.allContacts
                     val filteredContacts = list.value?.filter { it.name.contains(searchText.value, true) }
-                    //val filteredContacts = state.contacts.filter { it.name.contains(searchText.value, true) }
                     item{
-                        filteredContacts?.forEachIndexed { index, contact ->
-                            ContactItem(
-                                contact = contact,
-                                lastItem = index == filteredContacts.size-1
+                        if(filteredContacts?.isEmpty() == true){
+                            Text(
+                                text = "Actualmente no tiene contactos",
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(top = 10.dp),
+                                textAlign = TextAlign.Center,
+                                color = Color.LightGray
                             )
+                        }else{
+                            filteredContacts?.forEachIndexed { index, contact ->
+                                ContactItem(
+                                    contact = contact,
+                                    lastItem = index == filteredContacts.size-1,
+                                    contactViewModel = contactViewModel
+                                )
+                            }
                         }
                     }
 

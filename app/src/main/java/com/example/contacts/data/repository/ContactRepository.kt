@@ -17,8 +17,12 @@ class ContactRepository(
         contactDao.deleteContact(contact)
     }
 
-    suspend fun update(contact: Contact){
-        contactDao.addToFavorite(contact)
+    fun addFavorite(idContact: Int){
+        contactDao.addToFavorite(idContact)
+    }
+
+    fun removeFavorite(idContact: Int){
+        contactDao.deleteFromFavorite(idContact)
     }
 
 }

@@ -14,16 +14,16 @@ interface ContactDao {
     @Delete
     suspend fun deleteContact(contact: Contact)
 
-    @Query("SELECT * FROM Contact")
+    @Query("SELECT * FROM Contact ORDER BY name ASC")
     fun allContacts() : LiveData<List<Contact>>
 
     @Query("SELECT * FROM Contact WHERE favorite='true'")
     fun getFavorites() : LiveData<List<Contact>>
 
-    @Update
-    suspend fun addToFavorite(contact: Contact)
+    @Query("UPDATE Contact SET favorite='1' WHERE id=:idContact")
+    fun addToFavorite(idContact: Int)
 
-    @Update
-    suspend fun deleteFromFavorite(contact: Contact)
+    @Query("UPDATE Contact SET favorite='0' WHERE id=:idContact")
+    fun deleteFromFavorite(idContact: Int)
 
 }
