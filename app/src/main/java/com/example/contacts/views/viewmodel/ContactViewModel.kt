@@ -2,6 +2,8 @@ package com.example.contacts.views.viewmodel
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -28,10 +30,14 @@ class ContactViewModel @Inject constructor(
     val allContacts : LiveData<List<Contact>>
     val repository : ContactRepository
 
+    val loaded = mutableStateOf(false)
+
     init {
+        loaded.value = false
         val dao = ContactDatabase.getDatabase(application).daoContact()
         repository = ContactRepository(dao)
         allContacts = repository.allContacts
+        loaded.value = true
     }
 
     fun addContact(contact: Contact){

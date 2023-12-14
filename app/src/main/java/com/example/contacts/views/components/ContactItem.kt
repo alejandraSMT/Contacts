@@ -1,12 +1,15 @@
 package com.example.contacts.views.components
 
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
@@ -15,18 +18,24 @@ import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.example.contacts.model.Contact
 import com.example.contacts.ui.theme.buttonsColor
@@ -38,12 +47,15 @@ import com.example.contacts.views.viewmodel.ContactViewModel
 import me.saket.swipe.SwipeAction
 import me.saket.swipe.SwipeableActionsBox
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ContactItem(
     contact: Contact,
     lastItem : Boolean,
     contactViewModel: ContactViewModel
 ) {
+
+    val expanded = remember{ mutableStateOf(false) }
 
     val removeFavorite = SwipeAction(
         onSwipe = {
@@ -99,11 +111,18 @@ fun ContactItem(
         endActions = listOf(delete),
         modifier = Modifier
     ){
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(containerColor)
+                .combinedClickable(
+                    onLongClick = {
+                        expanded.value = true
+                    },
+                    onClick = {
+
+                    }
+                )
         ) {
             ListItem(
                 headlineContent = {
@@ -135,7 +154,8 @@ fun ContactItem(
                             bitmap = Converters().base64ToBitmap(contact.contactImage).asImageBitmap(),
                             contentDescription = "contact photo",
                             modifier = Modifier
-                                .size(40.dp),
+                                .size(40.dp)
+                                .clip(CircleShape),
                             contentScale = ContentScale.Fit
                         )
                     }
@@ -156,6 +176,28 @@ fun ContactItem(
                 ),
                 modifier = Modifier
             )
+
+            DropdownMenu(
+                expanded = expanded.value,
+                onDismissRequest = {
+                    expanded.value = false
+                },
+                modifier = Modifier
+                    .align(Alignment.End),
+                offset = DpOffset(x = 230.dp, y = 0.dp)
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "Edit",
+                            color = Color.Black
+                        )
+                    },
+                    onClick = {
+
+                    }
+                )
+            }
             if(!lastItem){
                 Divider(
                     thickness = 1.dp,

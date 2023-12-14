@@ -262,13 +262,11 @@ fun AddContactDialog(
 
                     Button(
                         onClick = {
-                            Log.i("CONVERTOR BASE64: ",Converters().bitmapToBase64(bitmap.value!!))
                             if(newName.value != "" && newNumber.value != ""){
                                 val contact = Contact(
                                     name = newName.value,
                                     number = newNumber.value,
-                                    contactImage = Converters().bitmapToBase64(bitmap.value!!)
-                                    /* REVISAR ESTO PORQUE GUARDA NULL*/
+                                    contactImage = if(bitmap.value == null) null else Converters().encodeImage(bitmap.value!!)
                                 )
                                 contactViewModel.addContact(contact)
                                 openAddDialog.value = false

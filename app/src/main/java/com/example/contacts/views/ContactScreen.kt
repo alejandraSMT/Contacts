@@ -23,6 +23,7 @@ import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -69,7 +70,6 @@ fun ContactScreen(
     contactViewModel: ContactViewModel = viewModel()
 ) {
     val allContacts = contactViewModel.allContacts.observeAsState().value
-    Log.i("ALL CONTACTS: ",allContacts.toString())
     val context= LocalContext.current
 
     val openAddDialog =  remember{ mutableStateOf(false) }
@@ -127,37 +127,51 @@ fun ContactScreen(
                     },
                     singleLine = true
                 )
-
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .clip(shape = RoundedCornerShape(20.dp))
-                        .background(Color.White),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val list = contactViewModel.allContacts
-                    val filteredContacts = list.value?.filter { it.name.contains(searchText.value, true) }
-                    item{
-                        if(filteredContacts?.isEmpty() == true){
-                            Text(
-                                text = "Actualmente no tiene contactos",
-                                modifier = Modifier
-                                    .align(Alignment.CenterHorizontally)
-                                    .padding(top = 10.dp),
-                                textAlign = TextAlign.Center,
-                                color = Color.LightGray
-                            )
-                        }else{
-                            filteredContacts?.forEachIndexed { index, contact ->
-                                ContactItem(
-                                    contact = contact,
-                                    lastItem = index == filteredContacts.size-1,
-                                    contactViewModel = contactViewModel
+                if(contactViewModel.allContacts.isInitialized){
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth(0.9f)
+                            .clip(shape = RoundedCornerShape(20.dp))
+                            .background(Color.White),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        val list = contactViewModel.allContacts
+                        val filteredContacts = list.value?.filter { it.name.contains(searchText.value, true) }
+                        item{
+                            if(filteredContacts?.isEmpty() == true){
+                                Text(
+                                    text = "Actualmente no tiene contactos",
+                                    modifier = Modifier
+                                        .align(Alignment.CenterHorizontally)
+                                        .padding(top = 10.dp),
+                                    textAlign = TextAlign.Center,
+                                    color = Color.LightGray
                                 )
+                            }else{
+                                filteredContacts?.forEachIndexed { index, contact ->
+                                    ContactItem(
+                                        contact = contact,
+                                        lastItem = index == filteredContacts.size-1,
+                                        contactViewModel = contactViewModel
+                                    )
+                                }
                             }
                         }
-                    }
 
+                    }
+                }else{
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ){
+                        CircularProgressIndicator(
+                            strokeWidth = 5.dp,
+                            color = Color.LightGray,
+                            trackColor = buttonsColor
+                        )
+                    }
                 }
             }
         },
